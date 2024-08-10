@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+	<display-name>Jersey Web Services with Authorization</display-name>
+
+	<filter>
+		<description>Filter to log request performance.</description>
+		<filter-name>HttpRequestFilter</filter-name>
+		<filter-class>gov.doc.isu.filters.HttpRequestFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>HttpRequestFilter</filter-name>
+		<url-pattern>/*</url-pattern><!-- all requests -->
+	</filter-mapping>
+
+	<!-- Listener Mapping -->
+	<listener>
+		<listener-class>org.unlockedlabs.pkrates.ws.api.servlet.listeners.ApplicationContextListener</listener-class>
+	</listener>
+
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+
+	<servlet>
+		<servlet-name>JerseyContainer</servlet-name>
+		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+		<init-param>
+			<param-name>javax.ws.rs.Application</param-name>
+			<param-value>org.unlockedlabs.pkrates.ws.api.core.Application</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>JerseyContainer</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+
+</web-app>

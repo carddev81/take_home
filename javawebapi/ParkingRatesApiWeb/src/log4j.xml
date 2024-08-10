@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/"
+	debug="true">
+
+	<appender name="console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Target" value="System.out" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{ABSOLUTE} %5p %c{1}:%L - %m%n" />
+		</layout>
+	</appender>
+
+	<appender name="appLog" class="gov.doc.isu.log.appender.MultiRollingFileAppender">
+		<param name="file" value="c:/temp/pkrates/AppLog.log" />
+		<param name="append" value="true" />
+		<param name="maxFileSize" value="20MB" />
+		<param name="maxBackupIndex" value="9" />
+		<param name="DatePattern" value="'.'yyyy-MM-dd"/>
+		<param name="encoding" value="UTF-8" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM/dd/yyyy HH:mm:ss,SSS} %-6r [%t] %-5p %c %x - %m%n" />
+		</layout>
+	</appender>
+
+	<appender name="HTTPRequestFilter" class="gov.doc.isu.log.appender.MultiRollingFileAppender">
+		<param name="file" value="c:/temp/pkrates/HTTPRequestFilter.log" />
+		<param name="append" value="true" />
+		<param name="maxFileSize" value="20MB" />
+		<param name="maxBackupIndex" value="9" />
+		<param name="DatePattern" value="'.'yyyy-MM-dd"/>
+		<param name="encoding" value="UTF-8" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM/dd/yyyy HH:mm:ss,SSS} %-6r [%t] %-5p %c %x - %m%n" />
+		</layout>
+	</appender>
+
+	<!-- org.apache logger's level will be turned on dynamically with the build 
+		script as it is verbose -->
+	<logger name="org.apache">
+		<level value="OFF" />
+	</logger>
+
+	<logger name="org.glassfish.jersey">
+		<level value="INFO" />
+	</logger>
+
+	<logger name="gov.doc.isu.filters.HttpRequestFilter" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="HTTPRequestFilter"/>
+	</logger>
+
+	<logger name="org.unlockedlabs.pkrates.ws.api">
+		<level value="INFO" />
+	</logger>
+
+	<root>
+		<level value="INFO" />
+		<appender-ref ref="appLog" />
+	</root>
+</log4j:configuration>

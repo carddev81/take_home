@@ -1,0 +1,657 @@
+<!-- ###################################################################### -->
+<!-- #                 Parking Rates API EAR Build File                   # -->
+<!-- # This build file will configure and make the Parking Rates API web  # -->
+<!-- # application.  Little or no intervention is required by the person  # -->
+<!-- # running this build file. It requires a few things installed on the # -->
+<!-- # machine that is running it in order to work. These are listed      # -->
+<!-- # below.                                                             # -->
+<!-- #                                                                    # -->
+<!-- # Ant:                                                               # -->
+<!-- #     Not suprisingly as this build file is written in ant it does   # -->
+<!-- #     require that a version of ant is installed. it should be       # -->
+<!-- #     version 1.9.4 or greater. To aquire ant, install, and          # -->
+<!-- #     configure. Please refer to https://ant.apache.org/             # -->
+<!-- #                                                                    # -->
+<!-- # antContrib:                                                        # -->
+<!-- #     ant-contrib is a set of extensions to ant that provide some    # -->
+<!-- #     decision style of control not included in the basic ant        # -->
+<!-- #     distribution. These are things like if and for loops. You      # -->
+<!-- #     can obtain it at https://ant-contrib.sourceforge.net. You only # -->
+<!-- #     need to add the jar file (ant-contrib-XXX.jar) to the lib      # -->
+<!-- #     directory underneath your ant installation. so install ant     # -->
+<!-- #     first.                                                         # -->
+<!-- #                                                                    # -->
+<!-- # Java:                                                              # -->
+<!-- #     In addition to whatever version of the java runtime            # -->
+<!-- #     environment you may have (and must have to make ant work) on   # -->
+<!-- #     your system you will need a jdk (Java Development Kit)         # -->
+<!-- #     installed on your system so that the *.java files can be       # -->
+<!-- #     compiled. Currently this must be version 1.8. Install this     # -->
+<!-- #     as you normally would and then MAKE SURE that your 'JAVA_HOME' # -->
+<!-- #     environment variable is set correctly, pointing to a jdk1.8    # -->
+<!-- #     installation. Also MAKE SURE that you have the value           # -->
+<!-- #     %JAVA_HOME%\bin inside of your 'Path' environment variable     # -->
+<!-- #     value list. If you do not have these environment variables     # -->
+<!-- #     you must create them and set their values. A shortcut to       # -->
+<!-- #     modify these values is:                                        # -->
+<!-- #                                                                    # -->
+<!-- #     Step 1) WINDOWS KEY + Pause/Break (keyboard shortcut)          # -->
+<!-- #     Step 2) Advanced System Properties (link or tab within window) # -->
+<!-- #     Step 3) Environment Variables... (button)                      # -->
+<!-- #                                                                    # -->
+<!-- #     An example of the environment variables explained is below:    # -->
+<!-- #                                                                    # -->
+<!-- #     EXAMPLES:                                                      # -->
+<!-- #            Variable name:  JAVA_HOME                               # -->
+<!-- #           Variable value:  C:\Program Files\Java\jdk-1.8           # -->
+<!-- #                                                                    # -->
+<!-- #     You can get the Development Kit at                             # -->
+<!-- #     https://www.oracle.com/java/technologies                       # -->
+<!-- ###################################################################### -->
+
+<project name="Parking Rates API EAR Build" default="run" basedir=".">
+	<description>
+			Build file to generate the Parking Rates API ear.
+		-clean
+		-prep enviromental files
+		-javaDocs
+		-compile projects
+		-jar
+		-war
+		-ear
+	</description>
+
+	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
+
+	<target name="run" description="Default Run" depends="start, init, clean, git.cleanup, prep.env, java.compile, javadoc, java.war, java.ear, stop"/>
+
+<!-- ###################################################################### -->
+<!-- # Section:Start and Stop                                             # -->
+<!-- #     Description: Start and stop the log                            # -->
+<!-- #                                                                    # -->
+<!-- ###################################################################### -->
+
+	<!-- =================================================================== -->
+	<!-- Start the Log                                                       -->
+	<!-- =================================================================== -->
+	<target name="start" description="starts build.log">
+		<record name="${basedir}/build.log" action="start" loglevel="verbose" append="true"/>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Stop the Log                                                        -->
+	<!-- =================================================================== -->
+	<target name="stop" depends="start" description="stops and changes name of build.log">
+	<echo>+---------------------------------------------------+</echo>
+	<echo>|                                                   |</echo>
+	<echo>| S T O P    B U I L D    L O G                     |</echo>
+	<echo>|                                                   |</echo>
+	<echo>+---------------------------------------------------+</echo>
+		<record name="${basedir}/build.log" action="stop" loglevel="verbose"/>
+		<move file="${basedir}/build.log" tofile="${basedir}/build.${application.name}_${build.name}.log"/>
+	</target>
+
+<!-- ###################################################################### -->
+<!-- # Section:Initialization                                             # -->
+<!-- #     Description: This section is used to establish most properties # -->
+<!-- #                  especially properties related to running the      # -->
+<!-- #                  environment (where compilers are and etc) and to  # -->
+<!-- #                  rarely changed switch properties.                 # -->
+<!-- #                                                                    # -->
+<!-- ###################################################################### -->
+
+	<!-- =================================================================== -->
+	<!-- Initialize the Properties                                           -->
+	<!-- =================================================================== -->
+	<target name="init" depends="validateAntVersion" description="initialize properties for build">
+		<echo>+---------------------------------------------------+</echo>
+		<echo>|                                                   |</echo>
+		<echo>| I N I T I A L I Z E    B U I L D                  |</echo>
+		<echo>|                                                   |</echo>
+		<echo>+---------------------------------------------------+</echo>
+			<echo>+---------------------------------------------------+</echo>
+			<echo>|Initialize some general properties for the build   |</echo>
+			<echo>+---------------------------------------------------+</echo>
+			<tstamp />
+			<property name="src" value="src" />
+			<property file="build.properties"/>
+			<buildnumber file="build.buildnumber"/>
+			<property environment="env"/>
+
+			<!-- ####################################################################### -->
+			<!-- # Section:Replaceable Values                                          # -->
+			<!-- #     Description: The two properties below are the only properties   # -->
+			<!-- #         that should need to be changed for normal operation. The    # -->
+			<!-- #         values of the properties are already set to the typically   # -->
+			<!-- #         used values during this build process.                      # -->
+			<!-- #                                                                     # -->
+			<!-- #         SWITCH PROPERTIES:                                          # -->
+			<!-- #            generate.javadocs ([true | false] Set this to true to    # -->
+			<!-- #                              generate javadocs for the java source  # -->
+			<!-- #                              code during the build process for this # -->
+			<!-- #                              application.)                          # -->
+			<!-- #            include.sourceCode ([true | false] Set this to true to   # -->
+			<!-- #                              include the source code (*.java files) # -->
+			<!-- #                              as part of the final packaged archive  # -->
+			<!-- #                              file(s) (war/ear/jar).                 # -->
+			<!-- ####################################################################### -->
+			<property name="generate.javadocs" value="true" description="true | false" />
+			<property name="include.sourceCode" value="true" description="true | false" />
+
+			<echo>+-----------------------------------------------------------------------------------------------+</echo>
+			<echo>|Running compiler level checks to make sure that this application gets compiled using Java v1.8 |</echo>
+			<echo>+-----------------------------------------------------------------------------------------------+</echo>
+				<echo>*********************************************************************************</echo>
+				<echo>* Here we make sure that the java version being used is 1.8. We check this by   *</echo>
+				<echo>* checking for the value set to the 'JAVA_HOME' environment variable which      *</echo>
+				<echo>* should be '1.8' per the way the installed version of the JDK should be. The   *</echo>
+				<echo>* next check is the 'java.version' that is being set which if it is not then    *</echo>
+				<echo>* most likely you do not have the value '%JAVA_HOME%\bin' in the list of paths  *</echo>
+				<echo>* of your 'Path' environment variable (this should be located at the beginning  *</echo>
+				<echo>* of the 'Path' value list). The final check is to make sure that the Java Home *</echo>
+				<echo>* directory exists. If 1.8 is not found within these values then it will fail   *</echo>
+				<echo>* this test with a detailed error message.                                      *</echo>
+				<echo>*********************************************************************************</echo>
+				<echo>env.JAVA_HOME      = ${env.JAVA_HOME}</echo>
+				<echo>java.version       = ${java.version}</echo>
+				<if>
+					<not>
+						<and>
+							<matches string="${env.JAVA_HOME}" pattern=".*\\.*1\.8.*"/>
+							<matches string="${java.version}" pattern="1\.8.*"/>
+							<available file="${env.JAVA_HOME}" type="dir" />
+						</and>
+					</not>
+					<then>
+						<echo>
+							Java Environment Settings Are Not Configured Correctly. This build process must be
+							configured to use Java 1.8.  Make sure to check the following 3 settings below:
+
+								***********************************************************************
+								* Shortcut to System properties (where environment variables are set) *
+								* Step 1) WINDOWS KEY + Pause/Break (keyboard shortcut)               *
+								* Step 2) Advanced System Properties (link or tab within window)      *
+								* Step 3) Environment Variables... (button)                           *
+								***********************************************************************
+
+								1) Make sure that your environment variable JAVA_HOME value is set to point to a
+								   jdk1.8v directory.
+
+								   EXAMPLE:
+								              Variable name:  JAVA_HOME
+								             Variable value:  C:\Program Files\Java\jdk1.8.0_131
+
+								2) make sure that the value of the environment variable 'Path' includes
+								   the following:  %JAVA_HOME%\bin. Also make sure that this is at the
+								   beginning of the list of paths
+
+								   EXAMPLE:
+								              Variable name:  Path
+								             Variable value:  %JAVA_HOME%\bin;C:\Program Files\Text Pad 5;
+
+								3) make sure that you have an installed version of the jdk1.8 on your machine.
+
+							After making sure these settings are configured correctly then you should have a
+							successful build.
+						</echo>
+						<fail message="Java 1.8 is not configured correctly for this build!! Look at the build.log for more information on what may be the problem."/>
+					</then>
+					<else>
+						<echo>Java Environment Settings Are Configured Correctly. Set java8.compiler.home property. Build process will now begin.</echo>
+						<property name="java8.compiler.home" value="${env.JAVA_HOME}" description="we are setting the java version that this code is going to be compiled in here based off of the environment variable JAVA_HOME due to this"/>
+					</else>
+				</if>
+
+			<property name="moduleList" value="ParkingRatesApiEAR, ParkingRatesApiWeb"/>
+			<property name="application.name" value="ParkingRatesApiWeb"/>
+			<property name="build.name" value="${build.number}_${DSTAMP}"/>
+			<property name="ear.name" value="${application.name}_${build.name}.ear"/>
+
+			<echo>+---------------------------------------------------+</echo>
+			<echo>|Initialize some properties based on conditions     |</echo>
+			<echo>+---------------------------------------------------+</echo>
+			<condition property="skip.target">
+				<istrue value="${GENERATE.javadocs.only}"/>
+			</condition>
+
+			<echo>+------------------------------------------------------------------------------------------------------------+</echo>
+			<echo>|Initialize user.id property here as a fail-safe in case a system error occurs and system variables are lost |</echo>
+			<echo>+------------------------------------------------------------------------------------------------------------+</echo>
+			<if>
+				<equals arg1="${env.USERNAME}" arg2="SYSTEM" casesensitive="false" trim="true"/>
+				<then>
+					<echo>Extracting user id from within the env.USERPROFILE property using a regular expression.</echo>
+					<propertyregex property="user.id" input="${env.USERPROFILE}" regexp="^(.*\\.*\\)(.*)$" select="\2" casesensitive="false" />
+				</then>
+				<else>
+					<property name="user.id" value="${env.USERNAME}" description="property set based off of a system variable here" />
+				</else>
+			</if>
+
+			<echo>+---------------------------------------------------------------------------------------+</echo>
+			<echo>|Initialize property filesToExclude based upon the value of include.sourceCode property |</echo>
+			<echo>+---------------------------------------------------------------------------------------+</echo>
+			<if>
+				<istrue value="${include.sourceCode}"/>
+				<then>
+					<echo>include.sourceCode equals ${include.sourceCode} so the *.java files (source files) will be included in this build</echo>
+					<property name="filesToExclude" value=""/>
+				</then>
+				<else>
+					<echo>include.sourceCode equals ${include.sourceCode} so the *.java files (source files) are NOT to be included in this build</echo>
+					<property name="filesToExclude" value="**/*.java"/>
+				</else>
+			</if>
+
+			<echo>+---------------------------------------------------+</echo>
+			<echo>|Print a list of all properties and their values    |</echo>
+			<echo>+---------------------------------------------------+</echo>
+			<echoproperties/>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Clean and or establish the temporary directories                    -->
+	<!-- =================================================================== -->
+	<target name="clean" description="clean and or establish the temporary directories">
+		<!-- set property saying whether src exists or not -->
+		<available file="${src}" type="dir" property="available.srcDir" />
+		<if>
+			<equals arg1="${available.srcDir}" arg2="true" />
+			<then>
+				<echo>Directory src does exist, cleaning it out</echo>
+				<delete includeemptydirs="true" verbose="true">
+					<fileset dir="${src}" includes="**/*" defaultexcludes="false"/>
+				</delete>
+				<mkdir dir="${src}" />
+			</then>
+			<else>
+				<echo>Directory src does not exist, creating it</echo>
+				<mkdir dir="${src}" />
+			</else>
+		</if>
+
+		<echo>Copy modules into build directory to prepare for building</echo>
+		<for list="${moduleList}" param="module" trim="true">
+			<sequential>
+				<copy todir="${src}/@{module}">
+					<fileset dir="../@{module}"/>
+				</copy>
+			</sequential>
+		</for>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Validate Currently Running ANT Version                              -->
+	<!-- =================================================================== -->
+	<target name="validateAntVersion" description="validates the ant version that this script is executed under">
+		<echo>+-----------------------------------------------------------------------------------------------------+</echo>
+		<echo>|                                                                                                     |</echo>
+		<echo>| V A L I D A T I N G   A N T   V E R S I O N   B E F O R E   B U I L D   P R O C E S S   S T A R T S |</echo>
+		<echo>|                                                                                                     |</echo>
+		<echo>+-----------------------------------------------------------------------------------------------------+</echo>
+		<if>
+			<not><antversion atleast="1.9.4"/></not>
+			<then>
+				<echo>
+					In order to successfully execute this build process you will need to obtain and install
+					ANT version 1.9.4 or greater.  Please ask a known ANT developer/user where you can obtain
+					a copy of the required version of ANT.  Once obtained there are only a few things you
+					will be required to configure on your machine.
+
+					1) Unzip the newer version of ANT to the same directory as where your other version
+					   of ANT is located.
+
+					2) Make sure that the value of the environment variable 'ANT_HOME' is
+					   changed to reflect the newer version of ANT.  Example follows:
+
+						***********************************************************************
+						* Shortcut to System properties (where environment variables are set) *
+						* Step 1) WINDOWS KEY + Pause/Break (keyboard shortcut)               *
+						* Step 2) Advanced System Properties (link or tab within window)      *
+						* Step 3) Environment Variables... (button)                           *
+						***********************************************************************
+
+						EXAMPLE:
+								  Variable name:  ANT_HOME
+								 Variable value:  C:\apache-ant-1.9.4
+
+					After making sure these settings are configured correctly then you should have a
+					successful build.
+				</echo>
+				<fail message="The version of ANT you are running does not meet the version needed to run this script which is at least 1.9.4."/>
+			</then>
+		</if>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Clean the junk out of the code and any temp files made              -->
+	<!-- =================================================================== -->
+	<target name="git.cleanup" description="clean up code from git before compiling, packaging, ect.">
+		<echo>+---------------------------------------------------+</echo>
+		<echo>|                                                   |</echo>
+		<echo>| C L E A N I N G    U P    C V S    C O D E        |</echo>
+		<echo>|                                                   |</echo>
+		<echo>+---------------------------------------------------+</echo>
+		<echo>+---------------------------------------------------+</echo>
+		<echo>|Delete class files in WEB-INF/classes directories  |</echo>
+		<echo>+---------------------------------------------------+</echo>
+		<delete includeemptydirs="true" verbose="true">
+			<fileset dir="${src}" includes="**/WEB-INF/classes/**/*" defaultexcludes="false"/>
+		</delete>
+		<echo>+---------------------------------------------------+</echo>
+		<echo>|Delete Thumbs.db files in any directory            |</echo>
+		<echo>+---------------------------------------------------+</echo>
+		<delete includeemptydirs="true" verbose="true">
+			<fileset dir="${src}" includes="**/**/Thumbs.db" defaultexcludes="false"/>
+		</delete>
+		<echo>+---------------------------------------------------+</echo>
+		<echo>|Delete class files in src                          |</echo>
+		<echo>+---------------------------------------------------+</echo>
+		<delete includeemptydirs="true" verbose="true">
+			<fileset dir="${src}" includes="**/src/**/*.class" defaultexcludes="false"/>
+		</delete>
+		<echo>+---------------------------------------------------+</echo>
+		<echo>|Delete .jasper files in src                        |</echo>
+		<echo>+---------------------------------------------------+</echo>
+		<delete includeemptydirs="true" verbose="true">
+			<fileset dir="${src}" includes="**/src/**/*.jasper" defaultexcludes="false"/>
+		</delete>
+	</target>
+
+<!-- ###################################################################### -->
+<!-- # Section:Preparation                                                # -->
+<!-- #     Description: This is a bit of moving files around to ensure    # -->
+<!-- #                  that the proper properties files, jar files etc   # -->
+<!-- #                  are in the correct place. This may include some   # -->
+<!-- #                  file editing where neccesary to change variables. # -->
+<!-- #                  This is also where application loggers levels are # -->
+<!-- #                  set based upon the property values that are set   # -->
+<!-- #                  inside of the build.properties file. For more     # -->
+<!-- #                  information regarding this setting refer to the   # -->
+<!-- #                  description in the build.properties file.         # -->
+<!-- ###################################################################### -->
+	<target name="prep.env" unless="skip.target" description="changing values based upon an environment or a cell that app will be in">
+		<echo>+---------------------------------------------------+</echo>
+		<echo>|                                                   |</echo>
+		<echo>| M O V I N G    E N V I R O M E N T    F I L E S   |</echo>
+		<echo>|                                                   |</echo>
+		<echo>+---------------------------------------------------+</echo>
+		<echo>Copy Rates.json file</echo>
+		<copy file="${basedir}/Rates.json" todir="${COPY.directory}" verbose="true" failonerror="false"/>
+
+		<echo>+---------------------------------------------------+</echo>
+		<echo>|Setting package level loggers and root logger      |</echo>
+		<echo>+---------------------------------------------------+</echo>
+			<echo>Making sure that only package level loggers are changed per user specified value from within the build.properties file</echo>
+			<replaceregexp file="${src}/ParkingRatesApiWeb/src/log4j.xml" match="(.*\&lt;logger name=&quot;([a-zA-Z]+|([a-z]+\.[a-z]+[A-Za-z]*)+)&quot;.*\&gt;.*\r\n.*)(\&lt;level.*value=&quot;.*&quot;)(.*/\&gt;)" replace="\1&lt;level value=&quot;${APPLICATION.packageLoggingLevel}&quot;\5" flags="gm" byline="false"/>
+
+			<echo>Making sure that org packages do not get set to anything higher than INFO.</echo>
+			<replaceregexp file="${src}/ParkingRatesApiWeb/src/log4j.xml" match="(.*\&lt;logger name=&quot;(org|org(\.[a-z]+[A-Za-z]*)+)&quot;.*\&gt;.*\r\n.*)(\&lt;level.*value=&quot;.*&quot;)(.*/\&gt;)" replace="\1&lt;level value=&quot;INFO&quot;\5" flags="gm" byline="false"/>
+
+			<echo>Making sure that the root logger is at a level specified by a user versus what is there from git by using a regular expression to change it's value.</echo>
+			<replaceregexp file="${src}/ParkingRatesApiWeb/src/log4j.xml" match="(.*\&lt;root\&gt;.*\r\n.*)(\&lt;level.*/\&gt;)" replace="\1&lt;level value=&quot;${ROOT.loggingLevel}&quot;/\&gt;" flags="gm" byline="false"/>
+	</target>
+
+<!-- ###################################################################### -->
+<!-- # Section:Compile                                                    # -->
+<!-- #     Description: Straight forward, build the classpaths and then,  # -->
+<!-- #                  just compile the src dir                          # -->
+<!-- ###################################################################### -->
+	<target name="java.compile" description="build classpaths and compile source code">
+		<echo>+---------------------------------------------------+</echo>
+		<echo>|                                                   |</echo>
+		<echo>| B U I L D I N G    C L A S S P A T H S            |</echo>
+		<echo>|                                                   |</echo>
+		<echo>+---------------------------------------------------+</echo>
+		<path id="ParkingRatesApiEAR.classpath">
+			<pathelement location="./lib/j2ee.jar"/>
+		</path>
+		<path id="ParkingRatesApiWeb.classpath">
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/asm-all-repackaged-2.5.0-b42.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/asm-analysis-6.2.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/asm-commons-6.2.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/asm-tree-6.2.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/asm-util-6.2.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/commons-io-2.0.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/commons-lang3-3.4.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/guava-28.2-jre.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/hk2-2.5.0-b42.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/hk2-api-2.5.0-b42.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/hk2-config-2.5.0-b42.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/hk2-core-2.5.0-b42.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/hk2-locator-2.5.0-b42.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/hk2-runlevel-2.5.0-b42.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/hk2-utils-2.5.0-b42.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-annotations-2.10.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-core-2.10.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-core-asl-1.9.5.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-coreutils-1.6.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-databind-2.10.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-dataformat-cbor-2.10.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-dataformat-xml-2.10.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-dataformat-yaml-2.10.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-datatype-guava-2.10.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-datatype-jdk8-2.9.9.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-datatype-jsr310-2.10.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-jaxrs-1.9.5.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-mapper-asl-1.9.5.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-module-jaxb-annotations-2.10.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-module-jaxb-annotations-2.9.9.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-module-parameter-names-2.10.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jackson-xc-1.9.5.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jakarta.activation-api-1.2.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jakarta.xml.bind-api-2.3.2.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/javassist-3.22.0-CR2.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/javax.annotation-api-1.3.2.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/javax.inject-1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/javax.inject-2.2.0-b10.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/javax.inject-2.5.0-b42.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/javax.ws.rs-api-2.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jaxb-api-2.3.0.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jaxb-core-2.3.0.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jaxb-impl-2.3.0.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-bean-validation-2.27.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-client-2.27.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-common-2.27.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-container-servlet-2.27.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-container-servlet-core-2.27.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-entity-filtering-2.27.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-hk2-2.27.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-media-jaxb-2.27.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-media-json-jackson-2.27.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-media-multipart-2.27.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-server-2.27.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jna-4.1.0.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jna-platform-4.1.0.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/json-patch-1.9.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/json-path-2.3.0.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/json-simple-1.1.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/json-smart-2.3.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/Junderground-1.0.3.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/log4j-1.2.15.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/mimepull-1.9.6.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/osgi-resource-locator-1.0.1.jar"/>
+			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/waffle-jna-1.7.jar"/>
+		</path>
+
+		<echo>+----------------------------------------------------------+</echo>
+		<echo>|                                                          |</echo>
+		<echo>| C O M P I L I N G    P a r k i n g R a t e s A p i W e b |</echo>
+		<echo>|                                                          |</echo>
+		<echo>+----------------------------------------------------------+</echo>
+		<javac srcdir="${src}/ParkingRatesApiWeb/src"
+			destdir="${src}/ParkingRatesApiWeb/src"
+			debug="on"
+			optimize="off"
+			deprecation="off"
+			fork="yes"
+			failonerror="true"
+			executable="${java8.compiler.home}\bin\javac.exe"
+			compiler="javac1.8">
+				<classpath refid="ParkingRatesApiEAR.classpath" />
+				<classpath refid="ParkingRatesApiWeb.classpath" />
+		</javac>
+	</target>
+
+<!-- ###################################################################### -->
+<!-- # Section:JavaDoc                                                    # -->
+<!-- #     Description: Generate Javadocs and put them in with the code   # -->
+<!-- ###################################################################### -->
+	<target name="javadoc" description="generate javadocs for application">
+		<echo>Switch property generate.javadocs = ${generate.javadocs}</echo>
+		<echo>Switch property GENERATE.javadocs.only = ${GENERATE.javadocs.only}</echo>
+		<if>
+			<or>
+				<equals arg1="${generate.javadocs}" arg2="true" />
+				<equals arg1="${GENERATE.javadocs.only}" arg2="true" />
+			</or>
+			<then>
+				<echo>+----------------------------------------------------------------------------------------+</echo>
+				<echo>|                                                                                        |</echo>
+				<echo>| G E N E R A T I N G    J A V A D O C S    F O R    P a r k i n g R a t e s A p i W e b |</echo>
+				<echo>|                                                                                        |</echo>
+				<echo>+----------------------------------------------------------------------------------------+</echo>
+				<javadoc
+					access="private"
+					author="true"
+					destdir="${src}/docs/ParkingRatesApiWeb"
+					sourcepath="${src}/ParkingRatesApiWeb/src"
+					nodeprecated="false"
+					nodeprecatedlist="false"
+					noindex="false"
+					nonavbar="false"
+					notree="false"
+					source="1.8"
+					splitindex="true"
+					use="true"
+					version="true">
+						<classpath refid="ParkingRatesApiEAR.classpath" />
+						<classpath refid="ParkingRatesApiWeb.classpath" />
+					<doctitle><![CDATA[<h1>${application.name} Web  Module</h1>]]></doctitle>
+					<bottom><![CDATA[<i>Copyright &#169; 2024 UnlockedLabs.org. All Rights Reserved.</i>]]></bottom>
+					<group title="Web:Filters"			packages="gov.doc.isu.filters"/>
+					<group title="Web:Log Appenders"	packages="gov.doc.isu.log.appender"/>
+					<group title="Web:Core"				packages="org.unlockedlabs.pkrates.ws.api.core"/>
+					<group title="Web:Endpoints"		packages="org.unlockedlabs.pkrates.ws.api.endpoints"/>
+					<group title="Web:RateObjects"		packages="org.unlockedlabs.pkrates.ws.api.rates"/>
+					<group title="Web:Listeners"		packages="org.unlockedlabs.pkrates.ws.api.servlet.listeners"/>
+					<link offline="false" href="https://www.oracle.com/java/technologies/" />
+				</javadoc>
+			</then>
+			<else>
+				<echo>+---------------------------------------------------------------------------+</echo>
+				<echo>|                                                                           |</echo>
+				<echo>| J A V A D O C   G E N E R A T I O N   T A R G E T   W A S   S K I P P E D |</echo>
+				<echo>|                                                                           |</echo>
+				<echo>+---------------------------------------------------------------------------+</echo>
+			</else>
+		</if>
+	</target>
+
+<!-- ###################################################################### -->
+<!-- # Section:Packaging                                                  # -->
+<!-- #     Description: Jaring, Waring, Earing, Raring if ever necessary  # -->
+<!-- ###################################################################### -->
+	<!-- ================================================================================== -->
+	<!-- War up the src code and WebContent source files and dynamically build the manifest -->
+	<!-- ================================================================================== -->
+	<target name="java.war" unless="skip.target" description="package web application files into a war file">
+		<echo>+----------------------------------------------------+</echo>
+		<echo>|                                                    |</echo>
+		<echo>| W A R I N G    P a r k i n g R a t e s A p i W e b |</echo>
+		<echo>|                                                    |</echo>
+		<echo>+----------------------------------------------------+</echo>
+		<war destfile="${src}\ParkingRatesApiWeb.war" webxml="${src}\ParkingRatesApiWeb\WebContent\WEB-INF\web.xml" duplicate="fail">
+			<manifest>
+				<attribute name="Sealed" value="false"/>
+				<attribute name="Built-By" value="${user.id}"/>
+				<attribute name="Software-Owner" value="UnlockedLabs.org"/>
+				<attribute name="Software-Description" value="This application is used to allow users an API to access and modify parking rates."/>
+				<section name="gov/doc/isu/filters/">
+					<attribute name="Package-Title" value="${application.name} ISU Filters"/>
+					<attribute name="Package-Version" value="${build.name}"/>
+					<attribute name="Package-Vendor" value="UnlockedLabs"/>
+					<attribute name="Implementation-Title" value="common"/>
+					<attribute name="Implementation-Version" value="${build.name} ${TODAY}"/>
+					<attribute name="Implementation-Vendor" value="UnlockedLabs"/>
+				</section>
+				<section name="gov/doc/isu/log/appender/">
+					<attribute name="Package-Title" value="${application.name} ISU Log Appender"/>
+					<attribute name="Package-Version" value="${build.name}"/>
+					<attribute name="Package-Vendor" value="UnlockedLabs"/>
+					<attribute name="Implementation-Title" value="common"/>
+					<attribute name="Implementation-Version" value="${build.name} ${TODAY}"/>
+					<attribute name="Implementation-Vendor" value="UnlockedLabs"/>
+				</section>
+				<section name="org/unlockedlabs/pkrates/ws/api/core/">
+					<attribute name="Package-Title" value="${application.name} Core"/>
+					<attribute name="Package-Version" value="${build.name}"/>
+					<attribute name="Package-Vendor" value="UnlockedLabs"/>
+					<attribute name="Implementation-Title" value="common"/>
+					<attribute name="Implementation-Version" value="${build.name} ${TODAY}"/>
+					<attribute name="Implementation-Vendor" value="UnlockedLabs"/>
+				</section>
+				<section name="org/unlockedlabs/pkrates/ws/api/endpoints/">
+					<attribute name="Package-Title" value="${application.name} Webservice Endpoints"/>
+					<attribute name="Package-Version" value="${build.name}"/>
+					<attribute name="Package-Vendor" value="UnlockedLabs"/>
+					<attribute name="Implementation-Title" value="common"/>
+					<attribute name="Implementation-Version" value="${build.name} ${TODAY}"/>
+					<attribute name="Implementation-Vendor" value="UnlockedLabs"/>
+				</section>
+				<section name="org/unlockedlabs/pkrates/ws/api/rates/">
+					<attribute name="Package-Title" value="${application.name} Parking Rate Models"/>
+					<attribute name="Package-Version" value="${build.name}"/>
+					<attribute name="Package-Vendor" value="UnlockedLabs"/>
+					<attribute name="Implementation-Title" value="common"/>
+					<attribute name="Implementation-Version" value="${build.name} ${TODAY}"/>
+					<attribute name="Implementation-Vendor" value="UnlockedLabs"/>
+				</section>
+				<section name="org/unlockedlabs/pkrates/ws/api/servlet/listeners/">
+					<attribute name="Package-Title" value="${application.name} Servlet Listeners"/>
+					<attribute name="Package-Version" value="${build.name}"/>
+					<attribute name="Package-Vendor" value="UnlockedLabs"/>
+					<attribute name="Implementation-Title" value="common"/>
+					<attribute name="Implementation-Version" value="${build.name} ${TODAY}"/>
+					<attribute name="Implementation-Vendor" value="UnlockedLabs"/>
+				</section>
+			</manifest>
+			<fileset dir="${src}\ParkingRatesApiWeb\WebContent"/>
+			<classes dir="${src}\ParkingRatesApiWeb\src" excludes="${filesToExclude}"/>
+		</war>
+	</target>
+
+	<!-- ================================================================================== -->
+	<!-- Ear up the war(s), jar(s), javadocs, and dynamically build the manifest            -->
+	<!-- ================================================================================== -->
+	<target name="java.ear" unless="skip.target" description="package jar/war files into an ear file">
+		<echo>+---------------------------------------------------+</echo>
+		<echo>|                                                   |</echo>
+		<echo>| E A R I N G   P a r k i n g R a t e s A p i W e b |</echo>
+		<echo>|                                                   |</echo>
+		<echo>+---------------------------------------------------+</echo>
+		<ear destfile="${src}/../${ear.name}" appxml="${src}\ParkingRatesApiEAR\EarContent\META-INF\application.xml">
+			<manifest>
+				<attribute name="Sealed" value="false"/>
+				<attribute name="Built-By" value="${user.id}"/>
+				<attribute name="Software-Owner" value="UnlockedLabs.org"/>
+				<attribute name="Software-Description" value="This application is used to allow users an API to access and modify parking rates."/>
+				<attribute name="Specification-Title" value="${application.name}"/>
+				<attribute name="Specification-Version" value="${build.name}"/>
+				<attribute name="Specification-Vendor" value="UnlockedLabs"/>
+				<attribute name="Implementation-Title" value="common"/>
+				<attribute name="Implementation-Version" value="${build.name} ${TODAY}"/>
+				<attribute name="Implementation-Vendor" value="UnlockedLabs"/>
+			</manifest>
+			<fileset dir="${src}">
+				<include name="ParkingRatesApiWeb.war"/>
+				<include name="docs/**" />
+			</fileset>
+		</ear>
+	</target>
+
+<!-- ###################################################################### -->
+<!-- # Section:<Section name>                                             # -->
+<!-- #     Description: <Section Discription>                             # -->
+<!-- ###################################################################### -->
+</project>
