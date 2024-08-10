@@ -99,6 +99,13 @@ The timezones specified in the JSON file adhere to the current version of the tz
 
 Assume that rates in this file will never overlap
 
+# **Test cases**
+
+If you would like to build against a small test suite, I have included a python
+script that will run tests against your API. This assumes you are serving it on
+port 8080, and also assumes that both endpoints return 200 status codes,
+as well as the expected JSON response.
+
 ## Sample result
 
 Datetime ranges must be specified in ISO-8601 format. A rate must completely encapsulate a datetime range for it to be available.
