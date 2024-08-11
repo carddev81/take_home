@@ -6,6 +6,7 @@ package org.unlockedlabs.pkrates.ws.api.rates;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,12 +24,11 @@ public class ParkingRateMemDAO {
 
     private static final Logger myLogger = Logger.getLogger("org.unlockedlabs.pkrates.ws.api.rates.ParkingRateMemDAO");
 
-    private static List<RateDO> PARKING_RATES = new ArrayList<>();//find thread-safe list
+    private static List<RateDO> PARKING_RATES = Collections.synchronizedList(new ArrayList<>());//synchronize list for thread safety 
 
     static {
         try {
             byte[] bytes = Files.readAllBytes(Paths.get(System.getProperty("INIT.jsonFilePath")));//read file in
-//            byte[] bytes = Files.readAllBytes(Paths.get("D:/RatesStaging/Rates.json"));//read file in
             RateModel rates = new ObjectMapper().readValue(new String(bytes), RateModel.class);//convert string into RateModel
             List<RateDO> rateDOList = rates.getRates().stream().map(rateDTO -> rateDTO.toDO()).collect(Collectors.toList());//convert DTOs into DOs
             PARKING_RATES.addAll(rateDOList);//add
