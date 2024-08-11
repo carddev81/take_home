@@ -4,7 +4,10 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.TimeZone;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.unlockedlabs.pkrates.ws.api.core.IDTO;
@@ -21,7 +24,7 @@ public class RateDO implements Serializable, IDTO<RateDTO> {
      * 
      */
     private static final long serialVersionUID = 1L;
-    private List<Day> days;
+    private SortedSet<Day> days;
     private TimeRange times;
     private TimeZone tz;
     private int price;
@@ -36,15 +39,15 @@ public class RateDO implements Serializable, IDTO<RateDTO> {
     /**
      * @return the days
      */
-    public List<Day> getDays() {
+    public SortedSet<Day> getDays() {
         return days;
     }//end method
 
     /**
      * @param days the days to set
      */
-    public void setDays(List<Day> days) {
-        this.days = days;
+    public void setDays(Set<Day> days) {
+        this.days = new TreeSet<>(days);
     }//end method
 
     /**

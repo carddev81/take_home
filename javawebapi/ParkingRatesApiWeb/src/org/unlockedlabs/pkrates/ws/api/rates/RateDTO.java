@@ -1,6 +1,7 @@
 package org.unlockedlabs.pkrates.ws.api.rates;
 
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -85,14 +86,19 @@ public class RateDTO implements IDO<RateDO>{
     public RateDO toDO() {
         RateDO rateDO = new RateDO();
         
-        List<Day> days = Stream.of(this.days.split(",")).map(s -> Day.valueOf(s.trim().toUpperCase())).collect(Collectors.toList());
+        Set<Day> days = Stream.of(this.days.split(",")).map(s -> Day.valueOf(s.trim().toUpperCase())).collect(Collectors.toSet());
         rateDO.setDays(days);
         
         List<String> times = Stream.of(this.times.split("-")).map(time -> time.trim()).collect(Collectors.toList());
         TimeRange range = new TimeRange(times.get(0), times.get(1));
         rateDO.setTimes(range);
         rateDO.setPrice(this.price);
-        rateDO.setTz(TimeZone.getTimeZone(this.getTz()));
+        
+        TimeZone tz = TimeZone.getTimeZone(this.getTz());
+        if("GMT".equals(tz.getID())) {
+            throw new IllegalArgumentException("Given TimeZone of " + String.valueOf(this.getTz()) + " not understood.");
+        }//end if
+        rateDO.setTz(tz);
 
         return rateDO;
     }//end method
