@@ -56,7 +56,10 @@ public class ParkingPrice {
         for (RateDO rateDO : parkingRatesByDay) {
             ZonedDateTime rateStartDtTm = rateDO.getRateZoneStartTm(startDtTm.toLocalDate());
             ZonedDateTime rateEndDtTm = rateDO.getRateZoneEndTm(endDtTm.toLocalDate());
-            if(startDtTm.isAfter(rateStartDtTm) && startDtTm.isBefore(rateEndDtTm) && endDtTm.isAfter(rateStartDtTm) && endDtTm.isBefore(rateEndDtTm)) {
+            if((startDtTm.isAfter(rateStartDtTm) || startDtTm.isEqual(rateStartDtTm))//check #1 
+                    && startDtTm.isBefore(rateEndDtTm)//check #2
+                    && endDtTm.isAfter(rateStartDtTm)//check #3 
+                    && (endDtTm.isBefore(rateEndDtTm) || endDtTm.isEqual(rateEndDtTm))) {//check #4
                 if(parkingRateFound) {
                     throw new RateUnavailableException("User input spanned more than one parking rate.");
                 }else{//found the rate
