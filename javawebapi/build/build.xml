@@ -59,11 +59,12 @@
 		-jar
 		-war
 		-ear
+		-deploy
 	</description>
 
 	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
 
-	<target name="run" description="Default Run" depends="start, init, clean, git.cleanup, prep.env, java.compile, javadoc, java.war, java.ear, stop"/>
+	<target name="run" description="Default Run" depends="start, init, clean, git.cleanup, prep.env, java.compile, javadoc, java.war, java.ear, deploy, stop"/>
 
 <!-- ###################################################################### -->
 <!-- # Section:Start and Stop                                             # -->
@@ -648,6 +649,43 @@
 				<include name="docs/**" />
 			</fileset>
 		</ear>
+	</target>
+
+<!-- ###################################################################### -->
+<!-- # Section:Deploy                                                     # -->
+<!-- #     Description: This section will make an attempt to deploy the   # -->
+<!-- #                  newly built application by first unzipping a      # -->
+<!-- #                  websphere liberty application server, copying the # -->
+<!-- #                  ear file to deployment folder and then executing  # -->
+<!-- #                  the start of the server.bat file                  # -->
+<!-- ###################################################################### -->
+	<!-- =================================================================== -->
+	<!-- Deploy ear                                                          -->
+	<!-- =================================================================== -->
+	<target name="deploy" description="deploy application">
+		<mkdir dir="${basedir}/deploy"/>
+		<unzip src="${basedir}/wlp.zip" dest="${basedir}/deploy" />
+
+		<echo>Deleting any previous deployment.</echo>
+		<delete includeemptydirs="true" verbose="true">
+			<fileset dir="${basedir}/deploy/wlp-javaee7-17.0.0.3/usr/servers/web/apps" includes="**/*" defaultexcludes="false"/>
+		</delete>
+		<delete includeemptydirs="true" verbose="true">
+			<fileset dir="${basedir}/deploy/wlp-javaee7-17.0.0.3/usr/servers/web/dropins" includes="**/*" defaultexcludes="false"/>
+		</delete>
+
+		<echo>Copy ear file to deployment location.</echo>
+		<copy file="${basedir}/${ear.name}" todir="${basedir}/deploy/wlp-javaee7-17.0.0.3/usr/servers/web/dropins" verbose="true" failonerror="false" />
+
+		<echo>Exectuting server start up.</echo>
+		<exec executable="${basedir}/deploy/wlp-javaee7-17.0.0.3/bin/server.bat" failonerror="false">
+			<arg value="start"/>
+			<arg value="web"/>
+		</exec>
+
+		<echo>Writing bat files for user to be able to easily start or stop server.</echo>
+		<echo file="${basedir}/deploy/startServer.bat">"${basedir}/deploy/wlp-javaee7-17.0.0.3/bin/server.bat" start web</echo>
+		<echo file="${basedir}/deploy/stopServer.bat">"${basedir}/deploy/wlp-javaee7-17.0.0.3/bin/server.bat" stop web</echo>
 	</target>
 
 <!-- ###################################################################### -->
