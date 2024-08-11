@@ -111,7 +111,7 @@ public class ParkingRateResource {
             ParkingPrice price = service.getPriceByTime(startDtTm, endDtTm);
             response = Response.status(200).entity(price).build();//building response
         }catch(RateUnavailableException e){//"unavailable"
-            myLogger.error("RateUnavailableException occurred while getting price based on user date/time input.  Valus of interest are: startDtTm=" + String.valueOf(startDtTm) + "; endDtTm=" + String.valueOf(endDtTm) +"; Error message is: " + e.getMessage(), e);
+            myLogger.warn("RateUnavailableException occurred while getting price based on user date/time input.  Valus of interest are: startDtTm=" + String.valueOf(startDtTm) + "; endDtTm=" + String.valueOf(endDtTm) +"; Error message is: " + e.getMessage());
             response =  Response.status(Response.Status.OK).entity("unavailable").build();
         }catch(Exception e){
             myLogger.error("Exception occurred while getting price based on user date/time input.  Valus of interest are: startDtTm=" + String.valueOf(startDtTm) + "; endDtTm=" + String.valueOf(endDtTm) +"; Error message is: " + e.getMessage(), e);
