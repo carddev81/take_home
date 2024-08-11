@@ -1,6 +1,6 @@
 import unittest
 import requests
-
+import urllib.parse
 
 class TestParkingAPI(unittest.TestCase):
     def setUp(self):
@@ -43,7 +43,7 @@ class TestParkingAPI(unittest.TestCase):
         response = requests.put(f"{self.base_url}/rates", json=self.sample_rates)
         self.assertEqual(response.status_code, 200, "Failed to load initial rates")
 
-    def test_price_available(self):
+    def test_price_available_1750(self):
         response = requests.get(
             f"{self.base_url}/price?start=2015-07-01T07:00:00-05:00&end=2015-07-01T12:00:00-05:00"
         )
@@ -51,6 +51,32 @@ class TestParkingAPI(unittest.TestCase):
         price_data = response.json()
         self.assertEqual(
             price_data["price"], 1750, "Price does not match expected value"
+        )
+
+    def test_price_available_2000(self):
+        params = {'start': '2015-07-04T15:00:00+00:00', 'end': '2015-07-04T20:00:00+00:00'};
+        urllib.parse.urlencode(params)
+        response = requests.get(
+            f"{self.base_url}/price?"+urllib.parse.urlencode(params)
+        )
+        self.assertEqual(response.status_code, 200)
+        price_data = response.json()
+        self.assertEqual(
+            price_data["price"], 2000, "Price does not match expected value"
+        )
+
+    def test_price_unavailable_no_rate_found(self):
+        params = {'start': '2015-07-04T07:00:00+05:00', 'end': '2015-07-04T20:00:00+05:00'};
+        urllib.parse.urlencode(params)
+        response = requests.get(
+            f"{self.base_url}/price?"+urllib.parse.urlencode(params)
+        )
+        self.assertEqual(response.status_code, 200)
+        price_data = response.json()
+        self.assertEqual(
+            price_data["price"],
+            "unavailable",
+            "Expected 'unavailable' for multiple days",
         )
 
     def test_price_unavailable_multiple_days(self):
