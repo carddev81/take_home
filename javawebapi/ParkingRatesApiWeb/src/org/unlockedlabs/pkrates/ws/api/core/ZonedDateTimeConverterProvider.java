@@ -45,7 +45,7 @@ public class ZonedDateTimeConverterProvider implements ParamConverterProvider{
     }//end method
 
     /**
-     * The {@link ParamConverter} for {@link ZonedDateTime} using the {@link #ISO_ZONED_DATE_TIME}.
+     * The {@link ParamConverter} for {@link ZonedDateTime} using the {@link DateTimeFormatter#ISO_ZONED_DATE_TIME}.
      */
     private static class Java8LocalDateClassicFormatParamConverter implements ParamConverter<ZonedDateTime> {
 

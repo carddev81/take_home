@@ -65,6 +65,7 @@ public class ParkingRateResource {
      * 
      * <p>NOTE This service will overwrite the currently stored rates with the given rates</p>
      * 
+     * @param rates the rates to be saved
      * @return response the response letting the user know rates were successfully updated
      */
     @PUT
@@ -95,6 +96,8 @@ public class ParkingRateResource {
     /**
      * Gets a parking rate price based on the given {@code startDtTm} and {@code endDtTm}.
      * 
+     * @param startDtTm the start date and time used to get price
+     * @param endDtTm the stop date and time used to get price
      * @return response the response containing the price as JSON or an unavailable response
      */
     @GET

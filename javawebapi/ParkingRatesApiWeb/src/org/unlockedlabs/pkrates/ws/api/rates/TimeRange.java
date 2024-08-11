@@ -44,7 +44,7 @@ public class TimeRange implements Serializable {
     /**
      * Gets the start tm.
      *
-     * @return the startDt
+     * @return the startTm
      */
     public LocalTime getStartTm() {
         return this.startTm;
@@ -53,8 +53,8 @@ public class TimeRange implements Serializable {
     /**
      * Sets the start tm.
      *
-     * @param startDt
-     *        the startDt to set
+     * @param startTm
+     *        the startTm to set
      */
     public void setStartTm(LocalTime startTm) {
         this.startTm = startTm;
@@ -63,7 +63,7 @@ public class TimeRange implements Serializable {
     /**
      * Gets the end tm.
      *
-     * @return the endDt
+     * @return the endTm
      */
     public LocalTime getEndTm() {
         return this.endTm;
@@ -72,8 +72,8 @@ public class TimeRange implements Serializable {
     /**
      * Sets the end tm.
      *
-     * @param endDt
-     *        the endDt to set
+     * @param endTm
+     *        the endTm to set
      */
     public void setEndTm(LocalTime endTm) {
         this.endTm = endTm;

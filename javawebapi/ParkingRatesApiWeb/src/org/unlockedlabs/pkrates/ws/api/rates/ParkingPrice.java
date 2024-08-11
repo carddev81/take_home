@@ -44,11 +44,11 @@ public class ParkingPrice {
     /**
      * Calculates parking price based on the given {@code startDtTm}, {@code endDtTm} and {@code parkingRatesByDay} and returns an instance of {@code ParkingPrice}.
      * 
-     * @param startDtTm
-     * @param endDtTm
-     * @param parkingRatesByDay
-     * @return
-     * @throws RateUnavailableException
+     * @param startDtTm the start date time used to calculate price
+     * @param endDtTm the end date time used to calculate price
+     * @param parkingRatesByDay list of {@code RateDO}s to search through
+     * @return price the ParkingPrice instance found based on start and stop date/time range
+     * @throws RateUnavailableException if price is unavailable {@link RateUnavailableException}
      */
     public static ParkingPrice calculatePrice(ZonedDateTime startDtTm, ZonedDateTime endDtTm, List<RateDO> parkingRatesByDay) throws RateUnavailableException {
         boolean parkingRateFound = false;
@@ -68,7 +68,7 @@ public class ParkingPrice {
                 }//end if
             }//end if
         }//end for
-        
+
         if(price==null) {
             throw new RateUnavailableException("No parking rate found based on user input.");
         }//end if
