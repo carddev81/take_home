@@ -351,12 +351,6 @@
 		<delete includeemptydirs="true" verbose="true">
 			<fileset dir="${src}" includes="**/src/**/*.class" defaultexcludes="false"/>
 		</delete>
-		<echo>+---------------------------------------------------+</echo>
-		<echo>|Delete .jasper files in src                        |</echo>
-		<echo>+---------------------------------------------------+</echo>
-		<delete includeemptydirs="true" verbose="true">
-			<fileset dir="${src}" includes="**/src/**/*.jasper" defaultexcludes="false"/>
-		</delete>
 	</target>
 
 <!-- ###################################################################### -->
@@ -462,8 +456,6 @@
 			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-media-json-jackson-2.27.jar"/>
 			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-media-multipart-2.27.jar"/>
 			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jersey-server-2.27.jar"/>
-			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jna-4.1.0.jar"/>
-			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/jna-platform-4.1.0.jar"/>
 			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/json-patch-1.9.jar"/>
 			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/json-path-2.3.0.jar"/>
 			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/json-simple-1.1.1.jar"/>
@@ -472,7 +464,6 @@
 			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/log4j-1.2.15.jar"/>
 			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/mimepull-1.9.6.jar"/>
 			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/osgi-resource-locator-1.0.1.jar"/>
-			<pathelement location="${src}/ParkingRatesApiWeb/WebContent/WEB-INF/lib/waffle-jna-1.7.jar"/>
 		</path>
 
 		<echo>+----------------------------------------------------------+</echo>
