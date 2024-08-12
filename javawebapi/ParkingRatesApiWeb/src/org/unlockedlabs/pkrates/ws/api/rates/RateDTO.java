@@ -82,6 +82,9 @@ public class RateDTO implements IDO<RateDO>{
         this.price = price;
     }//end method
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public RateDO toDO() {
         RateDO rateDO = new RateDO();

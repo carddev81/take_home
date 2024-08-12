@@ -22,7 +22,7 @@ public class ParkingRateService {
     private static final Logger myLogger = Logger.getLogger("org.unlockedlabs.pkrates.ws.api.rates.ParkingRateService");
 
     /**
-     * Constructor used to create an instance of 
+     * Constructor used to create an instance of ParkingRateService
      */
     public ParkingRateService() { }//end constructor
 

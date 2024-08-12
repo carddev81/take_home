@@ -44,7 +44,7 @@ public class ApplicationContextListener implements ServletContextListener {
      */
     public void contextInitialized(ServletContextEvent sce) {
         System.out.println("Entering contextInitialized");
-        // nothing to initialize at this time.
+        // need to initialize the in-memory db (list).
         new ParkingRateMemDAO();
         System.out.println("Exiting contextInitialized");
     }//end method

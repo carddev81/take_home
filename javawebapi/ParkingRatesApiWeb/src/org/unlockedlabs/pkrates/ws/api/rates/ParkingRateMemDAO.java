@@ -24,7 +24,7 @@ public class ParkingRateMemDAO {
 
     private static final Logger myLogger = Logger.getLogger("org.unlockedlabs.pkrates.ws.api.rates.ParkingRateMemDAO");
 
-    private static List<RateDO> PARKING_RATES = Collections.synchronizedList(new ArrayList<>());//synchronize list for thread safety 
+    private static List<RateDO> PARKING_RATES = Collections.synchronizedList(new ArrayList<>());//synchronized list for thread safety 
 
     static {
         try {
