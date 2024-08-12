@@ -5,7 +5,6 @@ package org.unlockedlabs.pkrates.ws.api.core;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -57,7 +56,7 @@ public class ZonedDateTimeConverterProvider implements ParamConverterProvider{
          */
         @Override
         public ZonedDateTime fromString(String value) {
-            return ZonedDateTime.parse(value, DTF);
+            return ZonedDateTime.parse(value, DTF);//if unable to parse user will get a status code of Not Found - 404
         }//end method
 
         /**
